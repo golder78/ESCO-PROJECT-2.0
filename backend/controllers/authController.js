@@ -17,7 +17,11 @@ export const register = async (req, res) => {
       data: { name, email, password: hashed, role: "user" },
     });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(201).json({
       message: "User registered successfully",
@@ -33,24 +37,33 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  // Admin login using .env credentials
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-    const token = jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    return res.json({
-      message: "Admin login successful",
-      token,
-      user: { name: "Admin", email, role: "admin" },
-    });
-  }
-
   try {
+    // ✅ Admin login using .env credentials
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+      const token = jwt.sign(
+        { role: "admin" },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+      return res.json({
+        message: "Admin login successful",
+        token,
+        user: { name: "Admin", email, role: "admin" },
+      });
+    }
+
+    // ✅ Regular user login
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.json({
       message: "Login successful",

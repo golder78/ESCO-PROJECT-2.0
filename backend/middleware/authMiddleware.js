@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// ✅ Verify user token
 export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -16,12 +15,13 @@ export const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Handle admin login from .env (no DB record)
+    // ✅ If this is an admin login (from .env), skip DB lookup
     if (decoded.role === "admin" && !decoded.id) {
-      req.user = { role: "admin" };
+      req.user = { role: "admin", email: decoded.email };
       return next();
     }
 
+    // ✅ Otherwise, fetch user from DB
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -32,7 +32,6 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// ✅ Restrict to admins only
 export const admin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();

@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// ✅ Place order — only for logged-in users
+//  Place order — only for logged-in users
 export const placeOrder = async (req, res) => {
   try {
     if (!req.user) {
@@ -19,12 +19,12 @@ export const placeOrder = async (req, res) => {
 
     res.status(201).json(order);
   } catch (error) {
-    console.error("❌ Error placing order:", error);
+    console.error(" Error placing order:", error);
     res.status(500).json({ message: "Failed to place order" });
   }
 };
 
-// ✅ Get orders — user sees their orders, admin sees all
+//  Get orders — user sees their orders, admin sees all
 export const getOrders = async (req, res) => {
   try {
     if (!req.user) {
@@ -50,7 +50,7 @@ export const getOrders = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
-    console.error("❌ Error fetching orders:", error);
+    console.error(" Error fetching orders:", error);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
